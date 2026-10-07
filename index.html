@@ -795,8 +795,6 @@ main{position:relative}
 .place .act{position:sticky;bottom:0;display:flex;gap:8px;padding:12px 18px;border-top:1px solid var(--line);background:var(--panel)}
 .place .act .btn{white-space:nowrap;justify-content:center}
 .place .act .go{flex:1}
-.contrast{margin-top:4px;padding:12px;border-radius:10px;background:var(--hover);font-size:13px;display:grid;gap:4px}
-.contrast .meta{font-size:11.5px;color:var(--ink3)}
 
 /* Leaflet 위 표시물 */
 .pinw{background:none;border:0}
@@ -1013,9 +1011,9 @@ const QS = [
   {q:"회사는 어느 구에 있나요?", opts:["유성구","서구","그 밖의 구"], dt:"회사 위치", use:"후보 순서에 참고 (거리로 거르지 않음)"},
   {q:"카메라를 쓰나요?", opts:["없음","있음"], dt:"카메라", use:"기관이 받아 줄 이유에 반영"},
   {q:"비용을 직접 내는 상시형과 지원사업(공모형) 중 어느 쪽인가요?", opts:["상시형(비용 자부담)","공모형(지원사업)"], dt:"방식", use:"문서·절차에 반영"},
-  {q:"의료기기 인증을 받았나요?", opts:["아직","받음"], dt:"확인 필요", dd:"의료기기 해당 여부 (인증 아직)", use:"사람 코디네이터 판단 대상"},
+  {q:"감지한 정보를 어디에 쓰나요? 진단·건강 측정 목적이면 의료기기일 수 있어요.", opts:["낙상 알림 + 호흡·심박 표시","낙상 알림만"], dt:"용도", dd:"낙상 알림 + 호흡·심박 표시 → 의료기기 해당 가능성", use:"병원 건은 AI가 1차 판단, 확정만 사람에게"},
 ];
-let st = {s:0, sel:null, cart:[], step:0, typed:0, ans:0, contrast:false, dash:{...VREQ}, flash:null};
+let st = {s:0, sel:null, cart:[], step:0, typed:0, ans:0, dash:{...VREQ}, flash:null};
 try{ const m=location.hash.match(/s(\d)/); if(m) st.s=Math.min(7,+m[1]); }catch(e){}
 if(st.s>=1){ st.step=LAYERS.length; st.typed=2; st.ans=QS.length; }
 if(st.s>=2) st.cart=[...PLAN];
@@ -1063,8 +1061,6 @@ function miniMap(el){
   mm.fitBounds(L.latLngBounds([C[1].ll,ALT.ll]).pad(.6));
 }
 
-const contrastBox = ()=> st.contrast ? `<div class="contrast"><b>다른 분야 제품을 넣으면 — 위성용 광학 부품</b>
-  <span>대전테크노파크 우주·양자산업센터 「열진공 시험기」</span><span class="meta">장비 › 재료물성시험장비 › 환경모사시험기 · 유성구 테크노9로 35 · 이용자 직접사용 · djtb 장비 #32075</span></div>` : "";
 
 const CK = `<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 6.2l2.3 2.3 4.7-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 // 현장 정보 창 — 시설 정보는 djtb 실제 값, 추천 이유는 예시 문구
@@ -1105,7 +1101,7 @@ function Atlas(){
     + `<li class="last ${on>=LAYERS.length&&s>=1?"on":""}"><span class="ck">${CK}</span><span>AI가 고른 후보<em>받아 줄 이유로 고르고, 회사와 거리는 순서에 참고</em></span><span class="n">${on>=LAYERS.length&&s>=1?"3":"—"}</span></li>`;
   const shown = s===0 ? R.length : (on>=LAYERS.length ? 3 : passCount[Math.max(0,on-1)]);
   const cands = s>=1 && on>=LAYERS.length ? `<section>
-      <p style="margin:0;display:flex;gap:6px;flex-wrap:wrap"><button class="btn sm" data-act="replay">걸러내기 다시 보기</button><button class="btn sm" data-act="contrast">${st.contrast?"낙상 센서로 돌아가기":"다른 분야 제품 넣어 보기"}</button></p>${contrastBox()}</section>` : "";
+      <p style="margin:0;display:flex;gap:6px;flex-wrap:wrap"><button class="btn sm" data-act="replay">걸러내기 다시 보기</button></p></section>` : "";
   return `<div class="atlas"><div class="mapwrap">
       <div class="query"><div class="qline"><output id="q" class="${st.typed===0?"ph":st.typed===1?"typing":""}">${st.typed===0?"만든 제품을 한 줄로 설명해 주세요":st.typed===2?PRODUCT:""}</output>
         ${s===0&&st.typed<2?`<button class="btn" data-act="type" ${st.typed?"disabled":""}>예시 입력</button>`
@@ -1151,7 +1147,7 @@ const HNF = [
 ];
 const STN = [["첫 상담","10/6"],["매칭","10/6"],["계획서","10/7"],["사전 협의","10/8"],["애로 조율","10/15"],["사후관리","11/2~"]]; // 날짜는 시나리오
 const AILOG = [
-  "상담 요약 — 확인 필요 1건(의료기기 해당 여부)",
+  "상담 요약 — 의료기기 해당 가능성 1건(병원 건, 확정 필요)",
   `시설 ${fmt(R.length)}곳에서 조건 3개로 걸러 후보 3곳(거리는 순서 참고) → 기업이 2곳 담음`,
   "참여 계획서(별지 제1호) 초안과 세부 수행계획서 목차 · 자문 인력 후보 3명",
   "경로당 건 협의 메일 · 통화 3줄 · 1쪽 요약 · 병원 건은 사람에게 넘김",
@@ -1167,7 +1163,7 @@ function Board(){
   const caseAt = hand ? pos(5) : pos(cur);
   const detail = {
     3:`<h2>사전 협의 준비 · 10/8</h2><div class="cases"><div class="pk"><span class="k">2</span><span><b>${C[1].name}</b><br><span class="meta">기관 협의 메일 초안 ↓</span></span></div>
-<div class="pk off"><span class="k">1</span><span><b>${C[0].name}</b><br><span class="meta">의료기기 해당 여부 확인이 필요해 사람 코디네이터에게 넘김 — 「사람에게 넘긴 일」</span></span></div></div><div class="to">받는 곳: 유성구 사회돌봄과 (djtb 공개 담당 부서) · 상시형은 대전TP가 신청을 기관에 전달하고, 공모형이면 이 협의로 「실증지원기관 참여의사 확인서」를 받는다</div>
+<div class="pk off"><span class="k">1</span><span><b>${C[0].name}</b><br><span class="meta">AI 1차 판단 「의료기기 해당 가능성 높음」 — 확정은 사람 코디네이터에게 넘김(「사람에게 넘긴 일」)</span></span></div></div><div class="to">받는 곳: 유성구 사회돌봄과 (djtb 공개 담당 부서) · 상시형은 대전TP가 신청을 기관에 전달하고, 공모형이면 이 협의로 「실증지원기관 참여의사 확인서」를 받는다</div>
 <div class="mail"><b>제목: [실증 협의] 관평1통경로당 낙상 감지 센서 3개월 실증 가능 여부 문의</b><span class="ex">예시</span>
 
 안녕하세요, 대전 ○○ 스타트업(가상 기업)입니다.
@@ -1183,9 +1179,12 @@ function Board(){
 <div><span class="n">4주차</span><span><b>점검 메시지</b> 「오경보가 늘었다면 원인(반려 물품·커튼)을 기록해 주세요」<span class="ex">예시</span></span></div>
 <div><span class="n">8주차</span><span>중간 기록 정리 · 기관 의견 수집</span></div>
 <div><span class="n">종료+30일</span><span>최종성과보고서(별지 제3호) · 원상복구 이행계획서 초안 · 실증확인서 발급 요청 안내</span></div></div><p class="fixed">시간 경과는 시나리오로 고정한다</p>`,
-    6:`<h2>사람에게 넘김 · 10/8 — 규제·인증 해석<span class="ex">예시</span></h2><div class="row"><b>1번 후보(병원) 설치 시 의료기기 해당 여부 판단이 필요하다</b><span>넘기는 조건 (a) 규제·인증 해석 · 넘기는 장면은 시나리오로 고정</span>
-<span>상담 요약과 지금까지의 기록을 <b>바이오헬스 분야 실증 코디네이터</b>에게 넘긴다. 기업은 같은 창구에서 이어서 안내받는다.</span></div>
-<p class="fixed">넘기는 조건은 넷 — 규제·인증 해석 / 후보 전부 거절 / 위험한 실증 / 기업이 사람을 요청</p>`
+    6:`<h2>사람에게 넘김 · 10/8 — 규제·인증 확정<span class="ex">예시</span></h2><div class="row"><b>1번 후보(병원) 설치 — 의료기기 해당 여부를 확정해야 한다</b><span>넘기는 조건 (a) 규제·인증 확정 · 넘기는 장면은 시나리오로 고정</span></div>
+<div class="row"><b>AI 1차 판단 — 해당 가능성 높음<span class="ex">예시</span></b><span>근거: 호흡·심박을 화면에 표시하면 생체신호 측정 목적으로 읽힐 수 있다. 낙상 알림만이면 가능성이 낮다.</span>
+<span>함께 넘기는 것: 제품 사용 목적 정리 · 판단이 갈리는 기준 · 식약처 품목 분류 질의에 쓸 요약</span>
+<span>사람에게 넘기는 이유: 틀리면 병원에 허가 없는 기기를 들이게 된다. AI는 판단 근거까지, <b>확정은 사람</b>이 한다.</span></div>
+<div class="row"><span>상담 요약과 AI 1차 판단을 <b>바이오헬스 분야 실증 코디네이터</b>에게 넘긴다. 기업은 같은 창구에서 이어서 안내받는다. 경로당 건은 의료 현장이 아니라 그대로 진행한다.</span></div>
+<p class="fixed">넘기는 조건은 넷 — 규제·인증 확정 / 후보 전부 거절 / 위험한 실증 / 기업이 사람을 요청</p>`
   }[s];
   const log = AILOG.slice(0, Math.min(s,6)+ (s<6?1:0)).map(([d,t],i,a)=>`<li class="${i===a.length-1&&!hand?"new":""}"><span class="n">${i+1}</span><span><span class="fixed">${d}</span> ${t}</span></li>`).join("");
   return `<div class="board"><div class="line"><div class="casehd"><b>내 실증 건</b><span>낙상 감지 센서 · 상시형 · 10/6 상담 시작 · 단계를 누르면 그때 기록을 본다</span><span class="ex">날짜는 시나리오</span></div><div class="rw"><div class="rail">${segs}${stns}
@@ -1193,7 +1192,7 @@ function Board(){
       <span class="case" style="left:${caseAt}%"><b>낙상 감지 센서</b> · ${s>=4?`<span class="chg">${ALT.name}</span>`:"관평1통경로당"} 외 1곳</span></div></div></div>
     <div class="work"><div class="detail">${detail}</div>
       <div class="lanes"><div class="lane"><h3>AI 코디네이터가 한 일<span class="ex">예시</span></h3><ol>${log}</ol></div>
-      <div class="lane hu"><h3>사람에게 넘긴 일<span class="ex">시나리오로 고정</span></h3>${s>=3?`<ol><li class="${s===3||hand?"new":""}"><span class="n">1</span><span><span class="fixed">10/8</span> 병원 건 의료기기 해당 여부 → 바이오헬스 분야 실증 코디네이터</span></li></ol>`:`<p class="empty">아직 없음. 넘기는 조건 넷 중 하나일 때만 넘긴다.</p>`}</div></div></div></div>`;
+      <div class="lane hu"><h3>사람에게 넘긴 일<span class="ex">시나리오로 고정</span></h3>${s>=3?`<ol><li class="${s===3||hand?"new":""}"><span class="n">1</span><span><span class="fixed">10/8</span> 병원 건 의료기기 해당 여부 확정(AI 1차 판단 첨부) → 바이오헬스 분야 실증 코디네이터</span></li></ol>`:`<p class="empty">아직 없음. 넘기는 조건 넷 중 하나일 때만 넘긴다.</p>`}</div></div></div></div>`;
 }
 
 function Duo(){
@@ -1207,7 +1206,7 @@ function Duo(){
       <div class="inbox"><div class="ih"><span>받은 요청 1건 · 첫 실증 연결소 경유</span><span>정리된 요청서<span class="ex">예시</span></span></div>
       <dl><dt>요청 기업</dt><dd>대전 ○○ 스타트업 (가상 기업)</dd><dt>제품</dt><dd>레이더 기반 비접촉 낙상 감지 센서</dd>
       <dt>희망 현장</dt><dd>${ALT.name} (실증자원 #${ALT.seq})</dd><dt>기간·설치</dt><dd>3개월 · 벽면 2대 · 공사 없음</dd>
-      <dt>원상복구</dt><dd>철거 후 원상태 확인</dd><dt>확인 필요</dt><dd>없음 — 의료기기 해석은 병원 건에서 사람 코디네이터가 맡음</dd></dl>
+      <dt>원상복구</dt><dd>철거 후 원상태 확인</dd><dt>확인 필요</dt><dd>없음 — 의료기기 해당 여부 확정은 병원 건에서 사람 코디네이터가 맡음</dd></dl>
       <div class="ia"><button class="btn sm go">협의 가능 회신</button><button class="btn sm">일정 조정 요청</button></div></div>
       <p class="fixed">기관은 같은 형식의 요청서를 받는다 — 기업마다 다른 메일을 해석하지 않아도 된다.</p></section>
     <section class="side"><h2>운영자 화면 — 현장 유형별 실증 수요</h2><div class="who">대전시·대전TP · 실증자원 수는 실제(djtb 2026-10, 장비는 대전TP 보유장비 CSV) · 요청 수는 <span class="v">시연용 가상 데이터</span></div>
@@ -1264,7 +1263,6 @@ document.addEventListener("click",e=>{ const b=e.target.closest("button"); if(!b
   else if(b.dataset.act==="close"){ const k=st.sel; showPlace(null); const f=pinM[k]&&pinM[k].getElement(); if(f) f.focus(); }
   else if(b.dataset.act==="plan") go(2);
   else if(b.dataset.act==="cart") toggleCart(+b.dataset.k);
-  else if(b.dataset.act==="contrast"){ st.contrast=!st.contrast; render(); }
   else if(b.dataset.act==="req"){ // 순위가 제자리에서 움직이도록 FLIP
     const box=$("#demand"), before={}; box.querySelectorAll(".dr[data-k]").forEach(r=>before[r.dataset.k]=r.getBoundingClientRect().top);
     st.dash["복지시설"]++; st.dash["의료시설"]+=2; st.flash="의료시설"; render();
